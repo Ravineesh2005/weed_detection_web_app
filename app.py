@@ -4,16 +4,37 @@ import os
 import cv2
 import base64
 app = Flask(__name__)
-model = YOLO('models/best.pt')
+model_cache = {}
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    models_dir = 'models'
+    if os.path.exists(models_dir):
+        available_models = [f for f in os.listdir(models_dir) if f.endswith('.pt')]
+    else:
+        available_models = []
+    return render_template('index.html', models=available_models)
 
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'image' not in request.files:
         return jsonify({'error': 'No image'}), 400
+    
+    model_name = request.form.get('model_name')
+    if not model_name:
+        return jsonify({'error': 'No model selected'}), 400
+        
+    model_path = os.path.join('models', model_name)
+    if not os.path.exists(model_path) or not model_path.endswith('.pt'):
+        return jsonify({'error': 'Model file not found'}), 404
+        
+    if model_name not in model_cache:
+        try:
+            model_cache[model_name] = YOLO(model_path)
+        except Exception as e:
+            return jsonify({'error': f'Failed to load model: {str(e)}'}), 500
+            
+    model = model_cache[model_name]
     
     file = request.files['image']
     temp_path = 'temp.jpg'

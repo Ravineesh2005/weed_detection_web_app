@@ -76,6 +76,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const formData = new FormData();
         formData.append('image', currentFile);
+        
+        const modelSelect = document.getElementById('model-select');
+        if (modelSelect && modelSelect.value) {
+            formData.append('model_name', modelSelect.value);
+        }
 
         try {
             const response = await fetch('/predict', {
