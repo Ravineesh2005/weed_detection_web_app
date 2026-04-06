@@ -3,6 +3,7 @@ from ultralytics import YOLO
 import os
 import cv2
 import base64
+import uuid
 app = Flask(__name__)
 model_cache = {}
 
@@ -37,7 +38,7 @@ def predict():
     model = model_cache[model_name]
     
     file = request.files['image']
-    temp_path = 'temp.jpg'
+    temp_path = f'temp_{uuid.uuid4().hex}.jpg'
     file.save(temp_path)
     
     results = model.predict(source=temp_path, conf=0.5)
