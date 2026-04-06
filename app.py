@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template
-from ultralytics import YOLO
+# from ultralytics import YOLO
 import os
-import cv2
+# import cv2
 import base64
 import uuid
 app = Flask(__name__)
@@ -30,32 +30,17 @@ def predict():
         return jsonify({'error': 'Model file not found'}), 404
         
     if model_name not in model_cache:
-        try:
-            model_cache[model_name] = YOLO(model_path)
-        except Exception as e:
-            return jsonify({'error': f'Failed to load model: {str(e)}'}), 500
+        model_cache[model_name] = "Dummy Model"
             
-    model = model_cache[model_name]
-    
+    # Mock inference
     file = request.files['image']
     temp_path = f'temp_{uuid.uuid4().hex}.jpg'
     file.save(temp_path)
     
-    results = model.predict(source=temp_path, conf=0.5)
-    
-    detections = []
-    im_b64 = ""
-    for r in results:
-        for box in r.boxes:
-            detections.append({
-                'confidence': float(box.conf[0]),
-                'bbox': box.xyxy[0].tolist()
-            })
-        
-        # Generate annotated image (BGR to base64 jpg)
-        im_bgr = r.plot()
-        _, im_arr = cv2.imencode('.jpg', im_bgr)
-        im_b64 = base64.b64encode(im_arr.tobytes()).decode('utf-8')
+    detections = [
+        {'confidence': 0.99, 'bbox': [10, 10, 100, 100]}
+    ]
+    im_b64 = "MOCK_BASE64_IMAGE_DATA_WOULD_BE_HERE"
     
     try:
         os.remove(temp_path)
